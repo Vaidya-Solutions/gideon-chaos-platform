@@ -1,0 +1,64 @@
+# services/gideon-chaos-platform/.github/workflows/chaos-platform-package.yml
+# @description Service-owned ARM64 packaging workflow for the grouped Gideon chaos platform repository.
+# @triggers push, pull_request, workflow_dispatch
+# Maintainer note: see .github/README.md for workflow ownership and boundary details.
+name: Chaos Platform Package
+
+on:
+  workflow_call:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: chaos-platform-package-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  package-arm64:
+    name: Package ARM64 Artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set up Go
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version-file: lambda-chaos-machine/.go-version
+          cache: true
+          check-latest: false
+          cache-dependency-path: lambda-chaos-machine/go.sum
+
+      - name: Package grouped ARM64 artifacts
+        run: make package-arm64
+
+      - name: Verify packaged ARM64 artifacts
+        run: |
+          test -f .artifacts/lambda-chaos-machine/arm64/steady-state/lambda.zip
+          test -f .artifacts/lambda-chaos-machine/arm64/start-experiment/lambda.zip
+          test -f .artifacts/lambda-chaos-machine/arm64/continue-execution/lambda.zip
+          test -f .artifacts/lambda-chaos-machine/arm64/evaluate-hypothesis/lambda.zip
+
+      - name: Upload ARM64 artifacts
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        with:
+          name: chaos-platform-arm64-packages
+          include-hidden-files: true
+          path: |
+            .artifacts/lambda-chaos-machine/arm64/steady-state/lambda.zip
+            .artifacts/lambda-chaos-machine/arm64/start-experiment/lambda.zip
+            .artifacts/lambda-chaos-machine/arm64/continue-execution/lambda.zip
+            .artifacts/lambda-chaos-machine/arm64/evaluate-hypothesis/lambda.zip
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,31 @@
+# Grouped chaos platform build artifacts
+.artifacts/
+
+# Go test and build outputs
+**/coverage.out
+**/coverage.html
+**/bootstrap
+**/lambda.zip
+*.out
+*.test
+
+# Local caches and temp files
+tmp/
+**/tmp/
+temp/
+**/temp/
+.cache/
+**/.cache/
+logs/
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.local.example
+!.env.template
+
+# Editor and OS noise
+.idea/
+.DS_Store
+Thumbs.db

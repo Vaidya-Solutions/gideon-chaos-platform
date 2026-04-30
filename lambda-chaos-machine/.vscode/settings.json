@@ -1,0 +1,30 @@
+{
+  "gopls": {
+    "directoryFilters": [
+      "-**/vendor",
+      "-**/.cache",
+      "-**/logs",
+      "-**/tmp",
+      "-**/.artifacts",
+      "-**/node_modules"
+    ],
+    "expandWorkspaceToModule": false,
+    "workspaceFiles": [
+      "go.mod",
+      "go.sum"
+    ],
+    "build.env": {
+      "GOWORK": "off"
+    }
+  },
+  "go.buildOnSave": "off",
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": [
+    "--config=${workspaceFolder}/.golangci.yml"
+  ],
+  "go.vetOnSave": "off",
+  "go.toolsEnvVars": {
+    "GOWORK": "off"
+  },
+  "go.useLanguageServer": true
+}

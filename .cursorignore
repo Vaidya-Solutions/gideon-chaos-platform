@@ -1,0 +1,23 @@
+# @file .cursorignore
+# @description Context exclusions for the grouped Gideon chaos platform boundary
+# @update-policy Update when grouped Go-local generated outputs, caches, or local-only artifacts change
+
+.git/
+.artifacts/
+vendor/
+tmp/
+**/tmp/
+temp/
+**/temp/
+.cache/
+**/.cache/
+coverage.out
+coverage.html
+*.out
+*.test
+logs/
+.env
+.env.*
+!.env.example
+!.env.local.example
+!.env.template

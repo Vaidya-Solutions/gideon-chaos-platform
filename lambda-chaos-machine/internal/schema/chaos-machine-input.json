@@ -1,0 +1,186 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "chaos-machine-input",
+  "title": "ChaosMachineInput",
+  "description": "Schema for chaos-machine experiment input passed to the Step Functions state machine",
+  "type": "object",
+  "required": ["testId", "experimentTemplateId"],
+  "additionalProperties": false,
+  "properties": {
+    "testId": {
+      "type": "string",
+      "description": "Unique human-readable test identifier (e.g., bedrock-throttle-001)",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]{0,62}[a-zA-Z0-9]$"
+    },
+    "testDescription": {
+      "type": "string",
+      "description": "Human-readable description of what this experiment tests",
+      "maxLength": 256
+    },
+    "experimentTemplateId": {
+      "type": "string",
+      "description": "AWS FIS ExperimentTemplate ID (starts with EXT)",
+      "pattern": "^EXT[A-Z0-9]+$"
+    },
+    "manifest": {
+      "type": "object",
+      "description": "Operator-owned experiment metadata describing scenario class, ownership, rollback path, and evidence expectations",
+      "additionalProperties": false,
+      "properties": {
+        "scenario": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "class": {
+              "type": "string",
+              "description": "Scenario family such as dependency-failure, network-disruption, overload, recovery-validation, infrastructure-disruption, or data-consistency"
+            },
+            "healthLayer": {
+              "type": "string",
+              "description": "Health layer under test: liveness, local, dependency, or anomaly"
+            },
+            "environment": {
+              "type": "string",
+              "description": "Approved execution environment such as dev-aws, staging-like, or production-approved"
+            },
+            "expectedResultClass": {
+              "type": "string",
+              "description": "Expected result classification such as steady-state-preserved, degraded-but-contained, or recovery-validated"
+            }
+          }
+        },
+        "owner": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Primary owner for the experiment"
+            },
+            "team": {
+              "type": "string",
+              "description": "Owning team or function"
+            },
+            "contact": {
+              "type": "string",
+              "description": "Operator contact handle or escalation reference"
+            }
+          }
+        },
+        "approval": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tier": {
+              "type": "string",
+              "description": "Approval tier such as tier-1, tier-2, or tier-3"
+            },
+            "approvedBy": {
+              "type": "array",
+              "description": "Named approvers or approval roles for the scenario",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "rollback": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "runbook": {
+              "type": "string",
+              "description": "Runbook or document reference for rollback"
+            },
+            "summary": {
+              "type": "string",
+              "description": "Short operator summary of the rollback path"
+            }
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "destination": {
+              "type": "string",
+              "description": "Planned destination for experiment evidence and findings"
+            },
+            "retention": {
+              "type": "string",
+              "description": "Evidence retention expectation or review window"
+            }
+          }
+        }
+      }
+    },
+    "stopConditionAlarmArns": {
+      "type": "array",
+      "description": "CloudWatch alarm ARNs used as FIS stop conditions (blast-radius guardrails)",
+      "items": {
+        "type": "string",
+        "pattern": "^arn:[a-z0-9-]+:cloudwatch:[a-z0-9-]+:[0-9]{12}:alarm:.+$"
+      },
+      "minItems": 1
+    },
+    "steadyStateMetrics": {
+      "type": "array",
+      "description": "CloudWatch metric definitions for steady-state verification. Use e* IDs for expression verdicts (0=FAIL, 1=PASS), m* for raw input data.",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string" },
+          "expression": { "type": "string" },
+          "label": { "type": "string" },
+          "metricStat": {
+            "type": "object",
+            "required": ["metric", "period", "stat"],
+            "properties": {
+              "metric": {
+                "type": "object",
+                "required": ["namespace", "metricName"],
+                "properties": {
+                  "namespace": { "type": "string" },
+                  "metricName": { "type": "string" },
+                  "dimensions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["name", "value"],
+                      "properties": {
+                        "name": { "type": "string" },
+                        "value": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              },
+              "period": { "type": "integer", "minimum": 10 },
+              "stat": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "steadyStateAlarms": {
+      "type": "array",
+      "description": "CloudWatch alarm names to check as part of steady-state verification",
+      "items": { "type": "string" }
+    },
+    "recoveryDelay": {
+      "type": "integer",
+      "description": "Seconds after experiment ends before starting recovery metric evaluation",
+      "minimum": 0,
+      "default": 0
+    },
+    "recoveryDuration": {
+      "type": "integer",
+      "description": "Duration in seconds of the recovery evaluation window",
+      "minimum": 60,
+      "default": 300
+    }
+  }
+}

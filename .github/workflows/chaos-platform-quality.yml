@@ -1,0 +1,54 @@
+# services/gideon-chaos-platform/.github/workflows/chaos-platform-quality.yml
+# @description Service-owned quality workflow for the grouped Gideon chaos platform repository.
+# @triggers push, pull_request, workflow_dispatch
+# Maintainer note: see .github/README.md for workflow ownership and boundary details.
+name: Chaos Platform Quality
+
+on:
+  workflow_call:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: chaos-platform-quality-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  GOLANGCI_LINT_VERSION: v2.11.4
+
+jobs:
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set up Go
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version-file: lambda-chaos-machine/.go-version
+          cache: true
+          check-latest: false
+          cache-dependency-path: lambda-chaos-machine/go.sum
+
+      - name: Install CI tools
+        run: |
+          curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b "$(go env GOPATH)/bin" "${GOLANGCI_LINT_VERSION}"
+          echo "$HOME/go/bin" >> "$GITHUB_PATH"
+
+      - name: Run grouped lint
+        run: make lint
+
+      - name: Run grouped tests
+        run: make test
