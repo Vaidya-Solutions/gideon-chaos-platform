@@ -53,7 +53,7 @@ make test
 ## Architecture
 
 - **Runtime**: `provided.al2023` (custom runtime)
-- **Architecture**: ARM64 for production, x86_64 for LocalStack
+- **Architecture**: ARM64 for production, x86_64 for local execution
 - **Build tags**: `-tags lambda.norpc` (single-process, no RPC overhead)
 - **Schema validation**: `//go:embed` for JSON Schema
 

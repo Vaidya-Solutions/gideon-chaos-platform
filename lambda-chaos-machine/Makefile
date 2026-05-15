@@ -4,7 +4,7 @@
 LAMBDA_COMMANDS := steady-state start-experiment continue-execution evaluate-hypothesis
 
 # Architecture configuration
-# Default: x86_64 for local testing (LocalStack, local dev machines)
+# Default: x86_64 for local testing on developer machines
 # Use `make build-arm64` or `make package-arm64` for AWS deployment (Graviton)
 GOARCH ?= amd64
 
